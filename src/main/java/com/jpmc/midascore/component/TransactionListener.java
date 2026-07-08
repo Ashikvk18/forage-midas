@@ -2,9 +2,11 @@ package com.jpmc.midascore.component;
 
 import com.jpmc.midascore.entity.TransactionRecord;
 import com.jpmc.midascore.entity.UserRecord;
+import com.jpmc.midascore.foundation.Incentive;
 import com.jpmc.midascore.foundation.Transaction;
 import com.jpmc.midascore.repository.TransactionRecordRepository;
 import com.jpmc.midascore.repository.UserRepository;
+import com.jpmc.midascore.service.IncentiveService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +19,12 @@ public class TransactionListener {
 
     private final UserRepository userRepository;
     private final TransactionRecordRepository transactionRecordRepository;
+    private final IncentiveService incentiveService;
 
-    public TransactionListener(UserRepository userRepository, TransactionRecordRepository transactionRecordRepository) {
+    public TransactionListener(UserRepository userRepository, TransactionRecordRepository transactionRecordRepository, IncentiveService incentiveService) {
         this.userRepository = userRepository;
         this.transactionRecordRepository = transactionRecordRepository;
+        this.incentiveService = incentiveService;
     }
 
     @KafkaListener(topics = "${general.kafka-topic}", groupId = "midas-core-group")
@@ -52,13 +56,17 @@ public class TransactionListener {
         // Transaction is valid - process it
         logger.info("Valid transaction: processing");
 
-        // Save transaction to database
-        TransactionRecord transactionRecord = new TransactionRecord(sender, recipient, transaction.getAmount());
+        // Call incentive API
+        Incentive incentive = incentiveService.getIncentive(transaction);
+        logger.info("Incentive received: {}", incentive.getAmount());
+
+        // Save transaction to database with incentive
+        TransactionRecord transactionRecord = new TransactionRecord(sender, recipient, transaction.getAmount(), incentive.getAmount());
         transactionRecordRepository.save(transactionRecord);
 
         // Update balances
         sender.setBalance(sender.getBalance() - transaction.getAmount());
-        recipient.setBalance(recipient.getBalance() + transaction.getAmount());
+        recipient.setBalance(recipient.getBalance() + transaction.getAmount() + incentive.getAmount());
 
         userRepository.save(sender);
         userRepository.save(recipient);

@@ -20,6 +20,9 @@ public class TransactionRecord {
     @Column(nullable = false)
     private Float amount;
 
+    @Column(nullable = false)
+    private Float incentive;
+
     protected TransactionRecord() {
     }
 
@@ -27,6 +30,14 @@ public class TransactionRecord {
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
+        this.incentive = 0f;
+    }
+
+    public TransactionRecord(UserRecord sender, UserRecord recipient, Float amount, Float incentive) {
+        this.sender = sender;
+        this.recipient = recipient;
+        this.amount = amount;
+        this.incentive = incentive;
     }
 
     public Long getId() {
@@ -43,5 +54,9 @@ public class TransactionRecord {
 
     public Float getAmount() {
         return amount;
+    }
+
+    public Float getIncentive() {
+        return incentive;
     }
 }
