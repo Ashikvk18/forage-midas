@@ -330,6 +330,12 @@ If Maven is not found:
 $env:PATH += ";C:\Program Files\Apache\maven\apache-maven-3.9.16\bin"
 ```
 
+## Certificate
+
+Completion certificate for the JPMorgan Chase Advanced Software Engineering Forage program:
+
+[![Certificate](certificate.pdf)](certificate.pdf)
+
 ## Contributing
 
 This project is part of the JPMorgan Chase Advanced Software Engineering Forage program.
